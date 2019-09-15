@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">MVVMTest</string>
+    <string name="user_name">User Name</string>
+    <string name="password">Password</string>
+    <string name="log_in">Login</string>
+    <string name="username_error">Username cannot be empty</string>
+    <string name="password_error">Password cannot be empty</string>
+    <string name="log_in_succeed">Login Succeeded</string>
+</resources>
