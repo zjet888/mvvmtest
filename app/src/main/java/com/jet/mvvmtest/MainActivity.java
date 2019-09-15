@@ -4,6 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.databinding.BindingAdapter;
 import androidx.databinding.DataBindingUtil;
 
+import android.app.Activity;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.TextUtils;
@@ -17,50 +20,66 @@ import com.jet.mvvmtest.databinding.ActivityMainBinding;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static LoginViewModel loginViewModel;
+    public ActivityMainBinding getActivityMainBinding() {
+        return activityMainBinding;
+    }
+
+    private ActivityMainBinding activityMainBinding;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ActivityMainBinding activityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
-        activityMainBinding.setViewModel(loginViewModel = new LoginViewModel());
+        activityMainBinding = DataBindingUtil.setContentView(this, R.layout.activity_main);
+        activityMainBinding.setViewModel(new LoginViewModel());
         activityMainBinding.executePendingBindings();
     }
 
-    @BindingAdapter({"progressbarStatus"})
-    public static void progressbarStatusCheck(ProgressBar view, int status) {
-        view.setVisibility(status);
-    }
     @BindingAdapter({"clicked"})
     public static void checkClicked(View view, boolean clicked) {
+        Activity activity = getActivity(view.getContext());
+        if(activity == null){
+            return;
+        }
+        MainActivity mainActivity = (MainActivity)activity;
         if(clicked) {
+            EditText textViewUsername = mainActivity.getActivityMainBinding().username;
             if (TextUtils.isEmpty(textViewUsername.getText())) {
                 textViewUsername.setError(view.getContext().getString(R.string.username_error));
                 return;
             }
+            EditText textViewPassword = mainActivity.getActivityMainBinding().password;
             if (TextUtils.isEmpty(textViewPassword.getText())) {
                 textViewPassword.setError(view.getContext().getString(R.string.password_error));
                 return;
             }
 
-            loginViewModel.setProgressbarStatus(View.VISIBLE);
+            mainActivity.getActivityMainBinding().progress.setVisibility(View.VISIBLE);
             new Handler().postDelayed(() -> {
                 Toast.makeText(view.getContext(), R.string.log_in_succeed, Toast.LENGTH_SHORT).show();
-                loginViewModel.setProgressbarStatus(View.GONE);
+                mainActivity.getActivityMainBinding().progress.setVisibility(View.GONE);
             }, 2000);
 
         }
     }
 
-    private static TextView textViewUsername;
-    private static TextView textViewPassword;
+    public static Activity getActivity(Context context)
+    {
+        if (context == null)
+        {
+            return null;
+        }
+        else if (context instanceof ContextWrapper)
+        {
+            if (context instanceof Activity)
+            {
+                return (Activity) context;
+            }
+            else
+            {
+                return getActivity(((ContextWrapper) context).getBaseContext());
+            }
+        }
 
-    @BindingAdapter({"username"})
-    public static void usernameCheck(TextView view, String username) {
-        textViewUsername = view;
+        return null;
     }
 
-    @BindingAdapter({"password"})
-    public static void passwordCheck(TextView view, String password) {
-        textViewPassword = view;
-    }
 }
